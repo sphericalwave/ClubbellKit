@@ -7,8 +7,11 @@ let package = Package(
     products: [
         .library(name: "ClubbellKit", targets: ["ClubbellKit"]),
     ],
+    dependencies: [
+        .package(path: "../../Logging/EquipmentKit"),
+    ],
     targets: [
-        .target(name: "ClubbellKit"),
+        .target(name: "ClubbellKit", dependencies: ["EquipmentKit"]),
         .testTarget(name: "ClubbellKitTests", dependencies: ["ClubbellKit"]),
     ]
 )

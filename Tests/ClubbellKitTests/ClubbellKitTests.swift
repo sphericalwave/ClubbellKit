@@ -36,3 +36,24 @@ final class ClubbellKitTests: XCTestCase {
         XCTAssertEqual(sel, back)
     }
 }
+
+// MARK: - EquipmentModel conformance
+
+import EquipmentKit
+
+extension ClubbellKitTests {
+    func testClubbellPayloadRoundTrip() {
+        var sel = ClubSelection()
+        sel.enableSecondGrip()
+        let data = EquipmentPayloadCodec.encode(Clubbell.self, sel)
+        XCTAssertEqual(EquipmentPayloadCodec.decode(Clubbell.self, from: data), sel)
+        XCTAssertEqual(EquipmentPayloadCodec.equipmentID(of: data), "clubbell")
+    }
+
+    func testClubbellSummaryNamesClubAndGrip() {
+        var sel = ClubSelection()
+        XCTAssertFalse(Clubbell.summary(sel).isEmpty)
+        sel.enableSecondGrip()
+        XCTAssertTrue(Clubbell.summary(sel).hasSuffix("two-handed"))
+    }
+}
