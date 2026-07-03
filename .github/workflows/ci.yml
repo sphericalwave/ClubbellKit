@@ -1,0 +1,22 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  test:
+    name: test
+    runs-on: macos-15
+    steps:
+      # Checkout into Equipment/ClubbellKit so the local path dependency
+      # ../../Logging/EquipmentKit resolves to the sibling checkout below.
+      - uses: actions/checkout@v4
+        with:
+          path: Equipment/ClubbellKit
+      - uses: actions/checkout@v4
+        with:
+          repository: sphericalwave/EquipmentKit
+          path: Logging/EquipmentKit
+      - name: Run package tests
+        run: swift test --package-path Equipment/ClubbellKit
