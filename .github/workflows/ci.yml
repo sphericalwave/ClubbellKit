@@ -20,3 +20,33 @@ jobs:
           path: Logging/EquipmentKit
       - name: Run package tests
         run: swift test --package-path Equipment/ClubbellKit
+
+  screenshots:
+    name: screenshots
+    if: github.event_name == 'pull_request'
+    runs-on: macos-15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: Equipment/ClubbellKit
+          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
+        with:
+          repository: sphericalwave/EquipmentKit
+          path: Logging/EquipmentKit
+      - name: Render screenshots + sync README
+        run: GEN_SCREENSHOTS=1 swift test --package-path Equipment/ClubbellKit --filter ScreenshotGenTests
+      - name: Commit generated assets
+        working-directory: Equipment/ClubbellKit
+        run: |
+          if [ -n "$(git status --porcelain Docs/img README.md)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add Docs/img README.md
+            git commit -m "docs: regenerate README screenshots"
+            git push
+          else
+            echo "No screenshot/README changes."
+          fi

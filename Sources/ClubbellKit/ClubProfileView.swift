@@ -195,3 +195,11 @@ private struct GripBand: View {
             )
     }
 }
+
+#if DEBUG
+#Preview("ClubProfileView") {
+    ClubbellKitSamples.profileView
+        .frame(height: 180)
+        .padding()
+}
+#endif

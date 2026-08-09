@@ -45,3 +45,12 @@ public struct ClubbellInputView: View {
         }
     }
 }
+
+#if DEBUG
+#Preview("ClubbellInputView") {
+    Form {
+        ClubbellInputView(payload: .constant(ClubSelection()), suggested: nil)
+            .frame(height: 320)
+    }
+}
+#endif
