@@ -3,6 +3,16 @@
 Clubbell equipment model for set-logging apps: catalog of reference clubbells, grip
 selection, and swing mechanics (torque, moment of inertia) computed from club + grip + pose.
 
+## Components
+
+<!-- SCREENSHOTS:START -->
+| Component | Preview |
+| --- | --- |
+| `ClubGripSelector` | ![ClubGripSelector](Docs/img/club-grip-selector.png) |
+| `ClubProfileView` | ![ClubProfileView](Docs/img/club-profile-view.png) |
+| `ClubbellInputView` | ![ClubbellInputView](Docs/img/clubbell-input-view.png) |
+<!-- SCREENSHOTS:END -->
+
 ## Requirements
 
 - iOS 17+ / macOS 14+

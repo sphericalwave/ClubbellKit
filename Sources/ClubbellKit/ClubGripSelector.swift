@@ -90,3 +90,11 @@ public struct ClubGripSelector: View {
         )
     }
 }
+
+#if DEBUG
+#Preview("ClubGripSelector") {
+    ClubGripSelector(selection: .constant(ClubSelection()))
+        .frame(height: 320)
+        .padding()
+}
+#endif
