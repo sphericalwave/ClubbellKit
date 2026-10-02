@@ -11,6 +11,8 @@ import SwiftUI
 public struct ClubGripSelector: View {
     @Binding var selection: ClubSelection
     let catalog: [ClubDimensions]
+    /// Set once in the host app's settings (see `ClubHandWidth`), not per set.
+    @AppStorage(ClubHandWidth.storageKey) private var handWidthIn = ClubHandWidth.defaultIn
 
     public init(selection: Binding<ClubSelection>,
                 catalog: [ClubDimensions] = ClubCatalog.all) {
@@ -34,33 +36,42 @@ public struct ClubGripSelector: View {
                             secondGripCenterIn: secondGripBinding)
 
             HStack {
-                Label(selection.secondGripCenterIn == nil ? "Grip" : "Lower hand",
-                      systemImage: "hand.point.up.left")
+                Text(selection.secondGripCenterIn == nil ? "Grip" : "Lower hand")
                 Slider(value: $selection.gripCenterIn,
                        in: selection.gripLowerBound...selection.gripUpperBound)
-                Text(String(format: "%.1f in", selection.gripCenterIn))
-                    .monospacedDigit().frame(width: 58, alignment: .trailing)
+                comDistance(selection.gripCenterIn)
             }
 
             if let upper = secondGripBinding {
                 HStack {
-                    Label("Upper hand", systemImage: "hand.point.up")
+                    Text("Upper hand")
                     Slider(value: upper,
                            in: selection.gripLowerBound...selection.gripUpperBound)
-                    Text(String(format: "%.1f in", upper.wrappedValue))
-                        .monospacedDigit().frame(width: 58, alignment: .trailing)
+                    comDistance(upper.wrappedValue)
                 }
             }
 
             Toggle("Two-handed", isOn: twoHandedBinding)
-
-            Stepper(value: $selection.handWidthIn, in: 2...8, step: 0.25) {
-                Text("Hand width  \(String(format: "%.2f in", selection.handWidthIn))")
-            }
         }
         .onChange(of: selection.dimensions) { _, _ in selection.clampGrip() }
-        .onChange(of: selection.handWidthIn) { _, _ in selection.clampGrip() }
-        .onAppear { selection.clampGrip() }
+        .onChange(of: handWidthIn) { _, _ in normalize() }
+        .onAppear { normalize() }
+    }
+
+    /// Apply the stored hand width and snap an off-catalog club, otherwise the
+    /// picker highlights the first club while the profile draws a different one.
+    private func normalize() {
+        let s = selection.normalized(to: catalog, handWidthIn: handWidthIn)
+        if s != selection { selection = s }
+    }
+
+    /// A hand's distance from the club's centre of mass — the lever arm that
+    /// sets how heavy the club feels, so it's what the readout shows.
+    private func comDistance(_ gripCenterIn: Double) -> some View {
+        let d = abs(selection.mechanics().comFromBottomIn - gripCenterIn)
+        return Text(String(format: "%.1f in", d))
+            .monospacedDigit().frame(width: 58, alignment: .trailing)
+            .accessibilityLabel(String(format: "%.1f inches from centre of mass", d))
     }
 
     /// Non-optional binding to the second hand, present only when two-handed.

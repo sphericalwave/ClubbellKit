@@ -57,3 +57,22 @@ extension ClubbellKitTests {
         XCTAssertTrue(Clubbell.summary(sel).hasSuffix("two-handed"))
     }
 }
+
+// MARK: - Normalization (catalog snap + stored hand width)
+
+extension ClubbellKitTests {
+    func testNormalizedSnapsOffCatalogClubToNearestWeight() {
+        // `.sample` is a 15 lb club that isn't in the catalog.
+        let sel = ClubSelection().normalized(to: ClubCatalog.all, handWidthIn: 4)
+        XCTAssertEqual(sel.dimensions, ClubCatalog.all.first { $0.weightLb == 15 })
+    }
+
+    func testNormalizedKeepsCatalogClubAndAppliesHandWidth() {
+        let five = ClubCatalog.all[0]
+        let sel = ClubSelection(dimensions: five, gripCenterIn: 3)
+            .normalized(to: ClubCatalog.all, handWidthIn: 3.25)
+        XCTAssertEqual(sel.dimensions, five)
+        XCTAssertEqual(sel.handWidthIn, 3.25)
+        XCTAssertGreaterThanOrEqual(sel.gripCenterIn, sel.gripLowerBound)
+    }
+}

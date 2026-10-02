@@ -51,6 +51,22 @@ public extension ClubSelection {
         }
     }
 
+    /// This selection with `handWidthIn` applied and its club snapped to the
+    /// catalog entry nearest in weight when it isn't in `catalog` (e.g. the
+    /// `.sample` default), grips clamped to the result.
+    func normalized(to catalog: [ClubDimensions], handWidthIn: Double) -> ClubSelection {
+        var s = self
+        s.handWidthIn = handWidthIn
+        if !catalog.contains(s.dimensions),
+           let nearest = catalog.min(by: {
+               abs($0.weightLb - s.dimensions.weightLb) < abs($1.weightLb - s.dimensions.weightLb)
+           }) {
+            s.dimensions = nearest
+        }
+        s.clampGrip()
+        return s
+    }
+
     /// Mechanics for this selection at a given pose.
     func mechanics(angleFromVerticalDeg: Double = 90, rpm: Double = 0) -> MechanicsResult {
         ClubMechanics.compute(dims: dimensions, gripCenterIn: gripCenterIn,

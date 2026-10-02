@@ -8,7 +8,7 @@ let package = Package(
         .library(name: "ClubbellKit", targets: ["ClubbellKit"]),
     ],
     dependencies: [
-        .package(path: "../../Logging/EquipmentKit"),
+        .package(url: "https://github.com/sphericalwave/EquipmentKit.git", branch: "main"),
     ],
     targets: [
         .target(name: "ClubbellKit", dependencies: ["EquipmentKit"]),

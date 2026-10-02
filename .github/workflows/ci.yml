@@ -9,17 +9,9 @@ jobs:
     name: test
     runs-on: macos-15
     steps:
-      # Checkout into Equipment/ClubbellKit so the local path dependency
-      # ../../Logging/EquipmentKit resolves to the sibling checkout below.
       - uses: actions/checkout@v4
-        with:
-          path: Equipment/ClubbellKit
-      - uses: actions/checkout@v4
-        with:
-          repository: sphericalwave/EquipmentKit
-          path: Logging/EquipmentKit
       - name: Run package tests
-        run: swift test --package-path Equipment/ClubbellKit
+        run: swift test
 
   screenshots:
     name: screenshots
@@ -30,16 +22,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          path: Equipment/ClubbellKit
           ref: ${{ github.head_ref }}
-      - uses: actions/checkout@v4
-        with:
-          repository: sphericalwave/EquipmentKit
-          path: Logging/EquipmentKit
       - name: Render screenshots + sync README
-        run: GEN_SCREENSHOTS=1 swift test --package-path Equipment/ClubbellKit --filter ScreenshotGenTests
+        run: GEN_SCREENSHOTS=1 swift test --filter ScreenshotGenTests
       - name: Commit generated assets
-        working-directory: Equipment/ClubbellKit
         run: |
           if [ -n "$(git status --porcelain Docs/img README.md)" ]; then
             git config user.name "github-actions[bot]"
