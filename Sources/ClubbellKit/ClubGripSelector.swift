@@ -11,6 +11,8 @@ import SwiftUI
 public struct ClubGripSelector: View {
     @Binding var selection: ClubSelection
     let catalog: [ClubDimensions]
+    /// Set once in the host app's settings (see `ClubHandWidth`), not per set.
+    @AppStorage(ClubHandWidth.storageKey) private var handWidthIn = ClubHandWidth.defaultIn
 
     public init(selection: Binding<ClubSelection>,
                 catalog: [ClubDimensions] = ClubCatalog.all) {
@@ -53,14 +55,17 @@ public struct ClubGripSelector: View {
             }
 
             Toggle("Two-handed", isOn: twoHandedBinding)
-
-            Stepper(value: $selection.handWidthIn, in: 2...8, step: 0.25) {
-                Text("Hand width  \(String(format: "%.2f in", selection.handWidthIn))")
-            }
         }
         .onChange(of: selection.dimensions) { _, _ in selection.clampGrip() }
-        .onChange(of: selection.handWidthIn) { _, _ in selection.clampGrip() }
-        .onAppear { selection.clampGrip() }
+        .onChange(of: handWidthIn) { _, _ in normalize() }
+        .onAppear { normalize() }
+    }
+
+    /// Apply the stored hand width and snap an off-catalog club, otherwise the
+    /// picker highlights the first club while the profile draws a different one.
+    private func normalize() {
+        let s = selection.normalized(to: catalog, handWidthIn: handWidthIn)
+        if s != selection { selection = s }
     }
 
     /// Non-optional binding to the second hand, present only when two-handed.

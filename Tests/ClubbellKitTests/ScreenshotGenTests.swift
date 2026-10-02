@@ -19,6 +19,8 @@ final class ScreenshotGenTests: XCTestCase {
             ("ClubGripSelector", CGSize(width: 360, height: 360),
              AnyView(ClubGripSelector(selection: .constant(ClubSelection()))
                 .frame(height: 320).padding())),
+            ("ClubHandWidthStepper", CGSize(width: 360, height: 80),
+             AnyView(Form { ClubHandWidthStepper() })),
             ("ClubProfileView", CGSize(width: 360, height: 200),
              AnyView(ClubbellKitSamples.profileView.frame(height: 180).padding())),
         ]

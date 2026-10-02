@@ -9,6 +9,7 @@ selection, and swing mechanics (torque, moment of inertia) computed from club + 
 | Component | Preview |
 | --- | --- |
 | `ClubGripSelector` | ![ClubGripSelector](Docs/img/club-grip-selector.png) |
+| `ClubHandWidthStepper` | ![ClubHandWidthStepper](Docs/img/club-hand-width-stepper.png) |
 | `ClubProfileView` | ![ClubProfileView](Docs/img/club-profile-view.png) |
 | `ClubbellInputView` | ![ClubbellInputView](Docs/img/clubbell-input-view.png) |
 <!-- SCREENSHOTS:END -->
