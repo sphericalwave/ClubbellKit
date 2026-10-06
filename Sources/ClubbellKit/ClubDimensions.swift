@@ -4,8 +4,11 @@ import Foundation
 ///
 /// Layout, bottom (x = 0) to top (x = totalLength), all measured in inches:
 ///   • knob   – a sphere of `ballDiameter`, resting with its bottom at x = 0
-///   • grip   – a cylinder of `gripDiameter`, x ∈ [ballDiameter/2, gripLength]
-///              (starts at the knob centre; the knob caps the bottom end)
+///   • grip   – a cylinder of `gripDiameter`, x ∈ [ballDiameter/2, gripEnd]
+///              (starts at the knob centre; the knob caps the bottom end).
+///              `gripLength` is the *bare* handle as measured on a real club,
+///              from where it leaves the knob (`knobLength`) to the taper, so
+///              gripEnd = knobLength + gripLength.
 ///   • taper  – a frustum, gripDiameter → barrelDiameter over `taperLength`
 ///   • barrel – a cylinder of `barrelDiameter`, length `barrelLength`
 ///
@@ -15,7 +18,7 @@ import Foundation
 public struct ClubDimensions: Codable, Hashable, Sendable {
     public var ballDiameter:   Double   // in  – pommel / knob at the end of the handle
     public var gripDiameter:   Double   // in  – the straight handle you hold
-    public var gripLength:     Double   // in  – length of the straight handle section
+    public var gripLength:     Double   // in  – bare straight handle, knob face → taper
     public var taperLength:    Double   // in  – transition handle → barrel ("tapering distance")
     public var barrelDiameter: Double   // in  – the heavy head
     public var barrelLength:   Double   // in
@@ -33,7 +36,17 @@ public struct ClubDimensions: Codable, Hashable, Sendable {
         self.weightLb = weightLb
     }
 
-    public var totalLength: Double { gripLength + taperLength + barrelLength }
+    /// Where the bare handle leaves the knob: the flat face cut into the ball
+    /// where its chord equals the grip diameter (inches from the knob end).
+    public var knobLength: Double {
+        let rk = ballDiameter / 2, rg = gripDiameter / 2
+        return rk > rg ? rk + (rk * rk - rg * rg).squareRoot() : ballDiameter
+    }
+
+    /// End of the straight handle / start of the taper.
+    public var gripEnd: Double { knobLength + gripLength }
+
+    public var totalLength: Double { gripEnd + taperLength + barrelLength }
 
     /// Outer radius (inches) of the solid of revolution at axial position x (inches).
     ///
@@ -53,10 +66,10 @@ public struct ClubDimensions: Codable, Hashable, Sendable {
         }
         // Grip cylinder — starts at the knob centre, so the knob caps the end of
         // the shaft (no rod pokes out past the ball, in the drawing or the maths).
-        if x >= rk, x <= gripLength { r = max(r, rg) }
+        if x >= rk, x <= gripEnd { r = max(r, rg) }
         // Taper frustum
-        let taperStart = gripLength
-        let taperEnd   = gripLength + taperLength
+        let taperStart = gripEnd
+        let taperEnd   = gripEnd + taperLength
         if x >= taperStart, x <= taperEnd, taperLength > 0 {
             let t = (x - taperStart) / taperLength
             r = max(r, rg + t * (rb - rg))

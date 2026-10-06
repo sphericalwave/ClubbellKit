@@ -127,7 +127,7 @@ public struct ClubProfileView: View {
                         ctx.stroke(p, with: .color(.black), lineWidth: 1.5)
                     }
                     vLine(x: xCut, halfH: cutHalf)                                   // sphere cut
-                    vLine(x: px(dims.gripLength),                                    // grip → taper
+                    vLine(x: px(dims.gripEnd),                                       // grip → taper
                           halfH: CGFloat(dims.gripDiameter / 2) * scaleY)
 
                     // --- Centre-of-mass marker ---

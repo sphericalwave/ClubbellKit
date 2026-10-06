@@ -21,6 +21,19 @@ final class ClubbellKitTests: XCTestCase {
         XCTAssertGreaterThan(d.radius(atX: rk * 0.25, includeKnob: true), 0)  // sphere still there
     }
 
+    /// `gripLength` is the bare handle measured on a real club: from where it
+    /// leaves the knob to the taper (15 lb club measured at 8.5 in).
+    func testGripLengthIsTheBareHandleAfterTheKnob() {
+        let d = ClubCatalog.all.first { $0.weightLb == 15 }!
+        let rg = d.gripDiameter / 2
+        XCTAssertEqual(d.gripEnd - d.knobLength, 8.5, accuracy: 1e-9)
+        // Straight handle radius right after the knob face and right before the taper.
+        XCTAssertEqual(d.radius(atX: d.knobLength + 0.05), rg, accuracy: 1e-9)
+        XCTAssertEqual(d.radius(atX: d.gripEnd - 0.05), rg, accuracy: 1e-9)
+        XCTAssertGreaterThan(d.radius(atX: d.gripEnd + 0.5), rg)   // taper has begun
+        XCTAssertEqual(d.totalLength, d.knobLength + 8.5 + d.taperLength + d.barrelLength, accuracy: 1e-9)
+    }
+
     /// clampGrip keeps the whole hand on the shaft, off the knob.
     func testGripClampStaysOffKnob() {
         var sel = ClubSelection(dimensions: .sample, gripCenterIn: 0, handWidthIn: 4)
