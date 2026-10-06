@@ -43,7 +43,22 @@ public struct ClubProfileView: View {
             let leftPad = (geo.size.width - CGFloat(L) * s) / 2   // centre horizontally
             let px: (Double) -> CGFloat = { xIn in leftPad + CGFloat(xIn) * s }
 
+            // Grip band geometry.
+            let halfHand = handWidthIn / 2
+            let bandW = CGFloat(handWidthIn) * scaleX
+            let bandH = drawH * 0.72
+            let lo = dims.ballDiameter + halfHand   // can't grip the knob
+            let hi = max(L - halfHand, lo)
+
             ZStack(alignment: .topLeading) {
+                // Upper hand (two-handed): mirrored and drawn under the club, so
+                // the fingers wrapping behind the shaft are hidden by it.
+                if let secondGrip {
+                    GripBand(center: secondGrip, halfHand: halfHand, bandW: bandW, bandH: bandH,
+                             centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
+                             tint: .purple, mirrored: true)
+                }
+
                 Canvas { ctx, _ in
                     // --- Club body (grip → taper → barrel); the knob is drawn
                     //     separately as a sphere, so exclude it here. ---
@@ -142,22 +157,13 @@ public struct ClubProfileView: View {
                         }
                     }
                 }
+                // Let drags through to the upper hand underneath.
+                .allowsHitTesting(false)
 
-                // --- Draggable grip band(s) ---
-                let halfHand = handWidthIn / 2
-                let bandW = CGFloat(handWidthIn) * scaleX
-                let bandH = drawH * 0.72
-                let lo = dims.ballDiameter + halfHand   // can't grip the knob
-                let hi = max(L - halfHand, lo)
-
+                // --- Draggable lower / only hand, in front of the club ---
                 GripBand(center: $gripCenterIn, halfHand: halfHand, bandW: bandW, bandH: bandH,
                          centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
                          tint: .accentColor)
-                if let secondGrip {
-                    GripBand(center: secondGrip, halfHand: halfHand, bandW: bandW, bandH: bandH,
-                             centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
-                             tint: .purple)
-                }
             }
         }
         .frame(height: 170)
@@ -167,7 +173,8 @@ public struct ClubProfileView: View {
 
 /// A single draggable translucent hand (a fist wrapped round the handle,
 /// seen side-on) over the club silhouette. Pinky toward the knob, thumb toward
-/// the barrel; a two-handed grip draws the upper hand the same way round.
+/// the barrel; in a two-handed grip the upper hand is mirrored so the hands
+/// face each other, thumbs meeting between them, as you'd see it.
 private struct GripBand: View {
     @Binding var center: Double
     let halfHand: Double
@@ -179,6 +186,7 @@ private struct GripBand: View {
     let lo: Double
     let hi: Double
     let tint: Color
+    var mirrored = false
 
     var body: some View {
         let bandX = leftPad + CGFloat(center - halfHand) * s
@@ -186,6 +194,7 @@ private struct GripBand: View {
             .fill(tint.opacity(0.3))
             .overlay(FistShape().stroke(tint, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)))
             .frame(width: max(bandW, 6), height: bandH)
+            .scaleEffect(x: mirrored ? -1 : 1, y: 1)
             .contentShape(Rectangle())
             .position(x: bandX + bandW / 2, y: centerY)
             .gesture(
