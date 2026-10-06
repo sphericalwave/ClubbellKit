@@ -46,7 +46,9 @@ public struct ClubProfileView: View {
             // Grip band geometry.
             let halfHand = handWidthIn / 2
             let bandW = CGFloat(handWidthIn) * scaleX
-            let bandH = drawH * 0.72
+            // Fingers wrapped round the handle: about a fifth of the hand
+            // width thick, on each side of the handle.
+            let fingerIn = handWidthIn * 0.22
             let lo = dims.ballDiameter + halfHand   // can't grip the knob
             let hi = max(L - halfHand, lo)
 
@@ -54,7 +56,8 @@ public struct ClubProfileView: View {
                 // Upper hand (two-handed): mirrored and drawn under the club, so
                 // the fingers wrapping behind the shaft are hidden by it.
                 if let secondGrip {
-                    GripBand(center: secondGrip, halfHand: halfHand, bandW: bandW, bandH: bandH,
+                    GripBand(center: secondGrip, halfHand: halfHand, bandW: bandW,
+                             dims: dims, fingerIn: fingerIn,
                              centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
                              tint: .purple, mirrored: true)
                 }
@@ -161,7 +164,8 @@ public struct ClubProfileView: View {
                 .allowsHitTesting(false)
 
                 // --- Draggable lower / only hand, in front of the club ---
-                GripBand(center: $gripCenterIn, halfHand: halfHand, bandW: bandW, bandH: bandH,
+                GripBand(center: $gripCenterIn, halfHand: halfHand, bandW: bandW,
+                         dims: dims, fingerIn: fingerIn,
                          centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
                          tint: .accentColor)
             }
@@ -179,7 +183,9 @@ private struct GripBand: View {
     @Binding var center: Double
     let halfHand: Double
     let bandW: CGFloat
-    let bandH: CGFloat
+    let dims: ClubDimensions
+    /// Finger thickness, inches — added above and below the handle.
+    let fingerIn: Double
     let centerY: CGFloat
     let leftPad: CGFloat
     let s: CGFloat
@@ -190,6 +196,10 @@ private struct GripBand: View {
 
     var body: some View {
         let bandX = leftPad + CGFloat(center - halfHand) * s
+        // True to scale: handle thickness where the hand sits plus a finger
+        // either side, so a thin handle gets a slimmer fist.
+        let handleIn = 2 * dims.radius(atX: center, includeKnob: false)
+        let bandH = CGFloat(handleIn + 2 * fingerIn) * s
         FistShape()
             .fill(tint.opacity(0.3))
             .overlay(FistShape().stroke(tint, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)))
