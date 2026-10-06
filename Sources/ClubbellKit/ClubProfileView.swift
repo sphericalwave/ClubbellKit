@@ -152,11 +152,11 @@ public struct ClubProfileView: View {
 
                 GripBand(center: $gripCenterIn, halfHand: halfHand, bandW: bandW, bandH: bandH,
                          centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
-                         tint: .accentColor, symbol: "hand.draw.fill")
+                         tint: .accentColor)
                 if let secondGrip {
                     GripBand(center: secondGrip, halfHand: halfHand, bandW: bandW, bandH: bandH,
                              centerY: centerY, leftPad: leftPad, s: s, lo: lo, hi: hi,
-                             tint: .purple, symbol: "hand.draw")
+                             tint: .purple)
                 }
             }
         }
@@ -165,7 +165,9 @@ public struct ClubProfileView: View {
     }
 }
 
-/// A single draggable translucent hand band over the club silhouette.
+/// A single draggable translucent hand (a fist wrapped round the handle,
+/// seen side-on) over the club silhouette. Pinky toward the knob, thumb toward
+/// the barrel; a two-handed grip draws the upper hand the same way round.
 private struct GripBand: View {
     @Binding var center: Double
     let halfHand: Double
@@ -177,15 +179,14 @@ private struct GripBand: View {
     let lo: Double
     let hi: Double
     let tint: Color
-    let symbol: String
 
     var body: some View {
         let bandX = leftPad + CGFloat(center - halfHand) * s
-        RoundedRectangle(cornerRadius: 6)
-            .fill(tint.opacity(0.28))
-            .overlay(RoundedRectangle(cornerRadius: 6).stroke(tint, lineWidth: 2))
+        FistShape()
+            .fill(tint.opacity(0.3))
+            .overlay(FistShape().stroke(tint, style: StrokeStyle(lineWidth: 1.5, lineJoin: .round)))
             .frame(width: max(bandW, 6), height: bandH)
-            .overlay(Image(systemName: symbol).font(.caption2).foregroundStyle(tint))
+            .contentShape(Rectangle())
             .position(x: bandX + bandW / 2, y: centerY)
             .gesture(
                 DragGesture().onChanged { v in
@@ -193,6 +194,33 @@ private struct GripBand: View {
                     center = min(max(xIn, lo), hi)
                 }
             )
+    }
+}
+
+/// Side-on fist: four finger segments across the hand width (pinky shortest,
+/// on the left / knob side) with the thumb laid along the top toward the
+/// barrel. Subpaths share winding, so the fill is one even translucent shape
+/// and the stroke shows the finger separations.
+private struct FistShape: Shape {
+    func path(in r: CGRect) -> Path {
+        var p = Path()
+        let w = r.width, h = r.height
+        let fingerW = w / 4
+        // pinky, ring, middle, index
+        let heights: [CGFloat] = [0.70, 0.84, 0.90, 0.84]
+        for (i, f) in heights.enumerated() {
+            let fh = h * f
+            let rect = CGRect(x: r.minX + CGFloat(i) * fingerW,
+                              y: r.midY - fh / 2 + h * 0.06,
+                              width: fingerW, height: fh)
+            p.addRoundedRect(in: rect, cornerSize: CGSize(width: fingerW * 0.45, height: fingerW * 0.45))
+        }
+        // Thumb along the top of the handle, over the middle and index fingers
+        // (kept inside the hand width so a stacked upper hand stays clear).
+        let thumb = CGRect(x: r.minX + w * 0.40, y: r.minY + h * 0.02,
+                           width: w * 0.60, height: h * 0.22)
+        p.addRoundedRect(in: thumb, cornerSize: CGSize(width: h * 0.11, height: h * 0.11))
+        return p
     }
 }
 
